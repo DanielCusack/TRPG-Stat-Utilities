@@ -20,12 +20,9 @@ class_name_mapping = {
         "Bow Knight (M)",
         "Axe Knight (M)",
         "Wyvern Rider (M)",
-        "Wyvern Rider (F)"
-
+        "Wyvern Rider (F)",
     ),
-    "Horse Knight (F)": (
-        "Bow Knight (F)",
-    ),
+    "Horse Knight (F)": ("Bow Knight (F)",),
     "Halberdier": (
         "Halberdier (F)",
         "Halberdier (M)",
@@ -38,9 +35,7 @@ class_name_mapping = {
         "Sage (F)",
         "Sage (M)",
     ),
-    "Bishop": (
-        "Bishop (M)",
-    ),
+    "Bishop": ("Bishop (M)",),
 }
 
 female_mapping = (
@@ -53,8 +48,9 @@ female_mapping = (
     "Astrid",
     "Calill",
     "Lucia",
-    "Ena"
+    "Ena",
 )  # Only including the ones that have an F suffix in their class
+
 
 def parse_sothe_growth(growth: str):
     """Sothe's growths are displayed weirdly by serenes forest. Needs sanitisation"""
@@ -63,10 +59,21 @@ def parse_sothe_growth(growth: str):
     return int(growth)
 
 
-res_stats = requests.get("https://serenesforest.net/path-of-radiance/classes/maximum-stats/")
+res_stats = requests.get(
+    "https://serenesforest.net/path-of-radiance/classes/maximum-stats/"
+)
 soup_stats = BeautifulSoup(res_stats.content, "html.parser")
 stat_table = soup_stats.find("table")
-stats_headers = ["hp", "strength", "magic", "skill", "speed", "luck", "defense", "resistance"]
+stats_headers = [
+    "hp",
+    "strength",
+    "magic",
+    "skill",
+    "speed",
+    "luck",
+    "defense",
+    "resistance",
+]
 
 fe_class_data = {}
 for tr in stat_table.find_all("tr")[1:]:
@@ -94,7 +101,9 @@ for class_name, max_stats in fe_class_data.items():
     )
 
 
-res_gains = requests.get("https://serenesforest.net/path-of-radiance/classes/promotion-gains/")
+res_gains = requests.get(
+    "https://serenesforest.net/path-of-radiance/classes/promotion-gains/"
+)
 soup_gains = BeautifulSoup(res_gains.content, "html.parser")
 promotion_table = soup_gains.find("table")
 
@@ -116,11 +125,13 @@ for tr in promotion_table.find_all("tr")[1:]:
             resistance=int(cells[8]),
         )
 
-char_base = requests.get("https://serenesforest.net/path-of-radiance/characters/base-stats/")
+char_base = requests.get(
+    "https://serenesforest.net/path-of-radiance/characters/base-stats/"
+)
 soup_char_base = BeautifulSoup(char_base.content, "html.parser")
 gains_table = soup_char_base.find("table")
 
-characters= {}
+characters = {}
 for tr in gains_table.find_all("tr")[1:]:
     cells = [td.get_text(strip=True).strip("+") for td in tr.find_all("td")]
     if not cells:
@@ -139,10 +150,8 @@ for tr in gains_table.find_all("tr")[1:]:
             else:
                 fe_class = FEClass.objects.filter(name=cells[1] + " (M)").first()
     if not fe_class:
-        raise RuntimeError(
-            f"Unable to resolve class ({cells[1]}) for {cells[0]} "
-        )
-        
+        raise RuntimeError(f"Unable to resolve class ({cells[1]}) for {cells[0]} ")
+
     characters[cells[0]] = {
         "base_class": fe_class,
         "base_level": cells[2],
@@ -156,7 +165,9 @@ for tr in gains_table.find_all("tr")[1:]:
         "base_resistance": cells[10],
     }
 
-char_growths = requests.get("https://serenesforest.net/path-of-radiance/characters/growth-rates/")
+char_growths = requests.get(
+    "https://serenesforest.net/path-of-radiance/characters/growth-rates/"
+)
 soup_char_growths = BeautifulSoup(char_growths.content, "html.parser")
 
 for tr in soup_char_growths.find_all("tr")[1:]:

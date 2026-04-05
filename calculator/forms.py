@@ -1,17 +1,13 @@
 from django import forms
 from fe_data.models import Character
 
+
 class StatCheckForm(forms.Form):
     character = forms.ModelChoiceField(
-        queryset=Character.objects.all(),
-        label="Character"
+        queryset=Character.objects.all(), label="Character"
     )
 
-    level = forms.IntegerField(
-        min_value=1,
-        max_value=20,
-        label="Current Level"
-    )
+    level = forms.IntegerField(min_value=1, max_value=20, label="Current Level")
 
     promoted = forms.BooleanField(label="Promoted", required=False)
 
@@ -30,4 +26,3 @@ class StatCheckForm(forms.Form):
         if character.base_class.promoted:
             cleaned_data["promoted"] = True
         return cleaned_data
-

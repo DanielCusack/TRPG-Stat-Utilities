@@ -6,48 +6,48 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('fe_data', '0003_character_base_level'),
+        ("fe_data", "0003_character_base_level"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='character',
-            name='growth_defense',
+            model_name="character",
+            name="growth_defense",
             field=models.FloatField(),
         ),
         migrations.AlterField(
-            model_name='character',
-            name='growth_hp',
+            model_name="character",
+            name="growth_hp",
             field=models.FloatField(),
         ),
         migrations.AlterField(
-            model_name='character',
-            name='growth_luck',
+            model_name="character",
+            name="growth_luck",
             field=models.FloatField(),
         ),
         migrations.AlterField(
-            model_name='character',
-            name='growth_magic',
+            model_name="character",
+            name="growth_magic",
             field=models.FloatField(),
         ),
         migrations.AlterField(
-            model_name='character',
-            name='growth_resistance',
+            model_name="character",
+            name="growth_resistance",
             field=models.FloatField(),
         ),
         migrations.AlterField(
-            model_name='character',
-            name='growth_skill',
+            model_name="character",
+            name="growth_skill",
             field=models.FloatField(),
         ),
         migrations.AlterField(
-            model_name='character',
-            name='growth_speed',
+            model_name="character",
+            name="growth_speed",
             field=models.FloatField(),
         ),
         migrations.AlterField(
-            model_name='character',
-            name='growth_strength',
+            model_name="character",
+            name="growth_strength",
             field=models.FloatField(),
         ),
     ]

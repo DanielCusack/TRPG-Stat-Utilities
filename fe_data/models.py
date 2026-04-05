@@ -1,5 +1,8 @@
 from django.db import models
 
+from fe_data.constants import FE_STAT_NAMES
+from calculator.utils import expected_stat, calculate_promoted_stat
+
 
 class StatBlock(models.Model):
     hp = models.IntegerField()
@@ -25,12 +28,15 @@ class FEClass(StatBlock):
 
 
 class PromotionBonus(StatBlock):
-    from_class = models.ForeignKey(FEClass, on_delete=models.CASCADE, related_name="promotes_from")
-    to_class = models.ForeignKey(FEClass, on_delete=models.CASCADE, related_name="promotes_to")
+    from_class = models.ForeignKey(
+        FEClass, on_delete=models.CASCADE, related_name="promotes_from"
+    )
+    to_class = models.ForeignKey(
+        FEClass, on_delete=models.CASCADE, related_name="promotes_to"
+    )
 
     def __str__(self):
         return f"{self.from_class} → {self.to_class}"
-
 
 
 class Character(models.Model):
@@ -58,6 +64,43 @@ class Character(models.Model):
     growth_defense = models.FloatField()
     growth_resistance = models.FloatField()
 
+    def calculate_expected_stats(self, level: int, promoted: bool):
+        # Compute stats without class change
+        expected_stats = {}
+        base_max_level = (
+            self.base_class.level_cap
+            if promoted and not self.base_class.promoted
+            else level
+        )
+        for stat in FE_STAT_NAMES:
+            expected_stats[stat] = expected_stat(
+                getattr(self, "base_" + stat),
+                getattr(self, "growth_" + stat),
+                self.base_level,
+                base_max_level,
+                getattr(self.base_class, stat),
+            )
+
+        # If the character starts unpromoted but is promoted now, calculate promotion bonuses and expected promoted stats
+        if promoted and not self.base_class.promoted:
+            promo_bonus = PromotionBonus.objects.filter(
+                from_class=self.base_class
+            ).first()
+            promo_class = promo_bonus.to_class
+            for stat in FE_STAT_NAMES:
+                expected_stats[stat] = calculate_promoted_stat(
+                    expected_stats[stat],
+                    getattr(promo_bonus, stat),
+                    getattr(promo_class, stat),
+                )
+                expected_stats[stat] = expected_stat(
+                    expected_stats[stat],
+                    getattr(self, "growth_" + stat),
+                    1,
+                    level,
+                    getattr(promo_class, stat),
+                )
+        return expected_stats
+
     def __str__(self):
         return self.name
-
