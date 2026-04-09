@@ -28,6 +28,9 @@ def stat_check_view(request):
             expected_stats = character.calculate_expected_stats(
                 level, form.cleaned_data["promoted"]
             )
+            percentile_stats = character.calculate_stat_percentiles(
+                actual_stats, level, form.cleaned_data["promoted"]
+            )
 
             # assemble results
             results = {}
@@ -35,13 +38,12 @@ def stat_check_view(request):
                 act = actual_stats[stat]
                 exp = expected_stats[stat]
                 diff = act - exp
-                label = classify_stat(act, exp)
 
                 results[stat] = {
                     "actual": act,
                     "expected": round(exp, 2),
                     "difference": round(diff, 2),
-                    "label": label,
+                    "label": percentile_stats,
                 }
     else:
         display_form = StatCheckForm()

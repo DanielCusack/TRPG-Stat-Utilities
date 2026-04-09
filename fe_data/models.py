@@ -1,7 +1,11 @@
 from django.db import models
 
 from fe_data.constants import FE_STAT_NAMES
-from calculator.utils import expected_stat, calculate_promoted_stat
+from calculator.utils import (
+    expected_stat,
+    calculate_promoted_stat,
+    cumulative_binomial_probability_at_least,
+)
 
 
 class StatBlock(models.Model):
@@ -65,6 +69,7 @@ class Character(models.Model):
     growth_resistance = models.FloatField()
 
     def calculate_expected_stats(self, level: int, promoted: bool):
+        """Calculate the character's expected stats for a given level and promotion via growths X level."""
         # Compute stats without class change
         expected_stats = {}
         base_max_level = (
@@ -101,6 +106,34 @@ class Character(models.Model):
                     getattr(promo_class, stat),
                 )
         return expected_stats
+
+    def calculate_stat_percentiles(
+        self, stats: dict[str, int], level: int, promoted: bool
+    ):
+        stat_percentiles = {}
+        if promoted and not self.base_class.promoted:
+            for stat_name in FE_STAT_NAMES:
+                stat = stats[stat_name]
+        else:
+            level_up_number = level - self.base_level
+            for stat_name in FE_STAT_NAMES:
+                growth_percentage = getattr(self, "growth_" + stat_name)
+                guaranteed_stat_per_level = int(growth_percentage // 100)
+                growth_probability = (
+                    growth_percentage / 100
+                ) - guaranteed_stat_per_level
+                stat_ups_required = (
+                    stats[stat_name]
+                    - getattr(self, "base_" + stat_name)
+                    - (guaranteed_stat_per_level * level_up_number)
+                )
+
+                growth_percentage = getattr(self, "growth_" + stat_name)
+
+                stat_percentiles[stat_name] = cumulative_binomial_probability_at_least(
+                    level_up_number, stat_ups_required, growth_probability
+                )
+        return stat_percentiles
 
     def __str__(self):
         return self.name
