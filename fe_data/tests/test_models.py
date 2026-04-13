@@ -38,6 +38,28 @@ class CharacterMethodTestCase(TestCase):
             growth_resistance=10,
         )
 
+        Character.objects.create(
+            name="test no promo near cap",
+            base_class=unpromoted_class,
+            base_level=1,
+            base_hp=1,
+            base_strength=1,
+            base_magic=1,
+            base_skill=1,
+            base_speed=99,
+            base_luck=1,
+            base_defense=1,
+            base_resistance=1,
+            growth_hp=150,  # Growths can be > 100%
+            growth_strength=50,
+            growth_magic=60,
+            growth_skill=60,
+            growth_speed=60,
+            growth_luck=60,
+            growth_defense=75,
+            growth_resistance=10,
+        )
+
     def test_percentile_calculation_no_promo(self):
         """test that the percentile calculation works for the
         simplist case where the character does not promote and
@@ -45,7 +67,7 @@ class CharacterMethodTestCase(TestCase):
         valid_stats = {
             "hp": 8,
             "strength": 2,
-            "magic": 3,
+            "magic": 1,  # No stat ups
             "skill": 2,
             "speed": 4,
             "luck": 1,
@@ -64,12 +86,49 @@ class CharacterMethodTestCase(TestCase):
         expected_percentiles = {
             "hp": 0.3125,
             "strength": 0.9375,
-            "magic": 0.8208,
+            "magic": 1,
             "skill": 0.9744,
             "speed": 0.4752,
             "luck": 1.0,
             "defense": 0.31640625,
             "resistance": 0.0001,
+        }
+        assert actual_percentiles == approx(
+            expected_percentiles
+        ), f"actual percentiles are different from expected\nActual: {actual_percentiles}\nExpect: {expected_percentiles}"
+
+    def test_percentile_calculation_no_promo_non_valid(self):
+        """test that the percentile calculation works for the
+        case where the character does not promote and the stats
+        are not valid"""
+        valid_stats = {
+            "hp": 10,  # Too high
+            "strength": 10,
+            "magic": 10,
+            "skill": 10,
+            "speed": 101,  # Above cap but reachable otherwise
+            "luck": 1000,  # Above cap and not reachable
+            "defense": 0,  # Below cap
+            "resistance": 0,
+        }
+        level = 5  # 4 level ups
+        character = Character.objects.get(
+            name="test no promo",
+        )
+        actual_percentiles = character.calculate_stat_percentiles(
+            stats=valid_stats,
+            level=level,
+            promoted=False,
+        )
+        expected_percentiles = {
+            "hp": 0,
+            "strength": 0,
+            "magic": 0,
+            "skill": 0,
+            "speed": 0,
+            "luck": 0,
+            "defense": 1,
+            "resistance": 1,
         }
         assert actual_percentiles == approx(
             expected_percentiles

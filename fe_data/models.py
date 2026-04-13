@@ -127,7 +127,11 @@ class Character(models.Model):
                     - getattr(self, "base_" + stat_name)
                     - (guaranteed_stat_per_level * level_up_number)
                 )
-
+                if stat_ups_required < 1:
+                    # Technically, if the stat is below the minimum possible,
+                    # then 100% of characters will have at least that amount
+                    stat_percentiles[stat_name] = 1
+                    continue
                 growth_percentage = getattr(self, "growth_" + stat_name)
 
                 stat_percentiles[stat_name] = cumulative_binomial_probability_at_least(
