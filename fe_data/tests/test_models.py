@@ -1,12 +1,12 @@
 from django.test import TestCase
 from pytest import approx
-from fe_data.models import Character, FEClass
+from fe_data.models import Character, FEClass, PromotionBonus
 
 
 class CharacterMethodTestCase(TestCase):
     def setUp(self):
-        unpromoted_class = FEClass.objects.create(
-            name="unpromoted class",
+        unpromotable_class = FEClass.objects.create(
+            name="unpromotable class",
             hp=100,
             strength=100,
             magic=100,
@@ -16,9 +16,44 @@ class CharacterMethodTestCase(TestCase):
             defense=100,
             resistance=100,
         )
+        unpromoted_class = FEClass.objects.create(
+            name="unpromoted class",
+            hp=20,
+            strength=20,
+            magic=20,
+            skill=20,
+            speed=20,
+            luck=20,
+            defense=20,
+            resistance=20,
+        )
+        promoted_class = FEClass.objects.create(
+            name="promoted class",
+            hp=40,
+            strength=40,
+            magic=40,
+            skill=40,
+            speed=40,
+            luck=40,
+            defense=40,
+            resistance=50,
+        )
+        PromotionBonus.objects.create(
+            from_class=unpromoted_class,
+            to_class=promoted_class,
+            hp=5,
+            strength=5,
+            magic=5,
+            skill=5,
+            speed=5,
+            luck=0,
+            defense=5,
+            resistance=5,
+        )
+
         Character.objects.create(
             name="test no promo",
-            base_class=unpromoted_class,
+            base_class=unpromotable_class,
             base_level=1,
             base_hp=1,
             base_strength=1,
@@ -40,7 +75,7 @@ class CharacterMethodTestCase(TestCase):
 
         Character.objects.create(
             name="test no promo near cap",
-            base_class=unpromoted_class,
+            base_class=unpromotable_class,
             base_level=1,
             base_hp=1,
             base_strength=1,
@@ -58,6 +93,28 @@ class CharacterMethodTestCase(TestCase):
             growth_luck=60,
             growth_defense=75,
             growth_resistance=10,
+        )
+
+        Character.objects.create(
+            name="test promo",
+            base_class=unpromoted_class,
+            base_level=15,
+            base_hp=15,
+            base_strength=20,
+            base_magic=10,
+            base_skill=17,
+            base_speed=17,
+            base_luck=17,
+            base_defense=13,
+            base_resistance=12,
+            growth_hp=60,
+            growth_strength=60,
+            growth_magic=60,
+            growth_skill=60,
+            growth_speed=60,
+            growth_luck=60,
+            growth_defense=140,
+            growth_resistance=160,
         )
 
     def test_percentile_calculation_no_promo(self):
@@ -129,6 +186,44 @@ class CharacterMethodTestCase(TestCase):
             "luck": 0,
             "defense": 1,
             "resistance": 1,
+        }
+        assert actual_percentiles == approx(
+            expected_percentiles
+        ), f"actual percentiles are different from expected\nActual: {actual_percentiles}\nExpect: {expected_percentiles}"
+
+    def test_percentile_calculation_promo(self):
+        """test that the percentile calculation works for the
+        case where the character can promote and
+        the stats given are valid.
+        """
+        valid_stats = {
+            "hp": 25,  # Edgecase as there are 5 levels unpromoted
+            "strength": 25,  # No stat ups starting at max in unpromo class
+            "magic": 15,  # No stat ups not starting at max in unpromo
+            "skill": 30,  # Probably the most typical case
+            "speed": 34,  # Max possible value considering unpromo cap
+            "luck": 25,  # Same as skill but with a promo bonus of 0
+            "defense": 42,  # Typical case for >100% growth
+            "resistance": 43,  # Max possible value considering unpromo cap >100% growth
+        }
+        level = 10  # 9 level ups
+        character = Character.objects.get(
+            name="test promo",
+        )
+        actual_percentiles = character.calculate_stat_percentiles(
+            stats=valid_stats,
+            level=level,
+            promoted=True,
+        )
+        expected_percentiles = {
+            "hp": 0.9824904585216,
+            "strength": 1,
+            "magic": 1,
+            "skill": 0.6303284424,  # Not 0.692452...
+            "speed": 0.006878632182,  # Not 0.03979158...
+            "luck": 0.6303284424,  # Not 0.692452...
+            "defense": 0.0025882211123,  # Not 0.0175095...
+            "resistance": 0.006878632182,  # Not 0.03979158...
         }
         assert actual_percentiles == approx(
             expected_percentiles

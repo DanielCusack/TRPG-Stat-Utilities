@@ -9,7 +9,7 @@ def calculate_promoted_stat(base, bonus, cap):
     return min(base + bonus, cap)
 
 
-def binomial_probability(n: int, r: int, p: int):
+def binomial_probability(n: int, r: int, p: float):
     return math.comb(n, r) * (p**r) * ((1 - p) ** (n - r))
 
 
