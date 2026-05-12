@@ -119,6 +119,9 @@ class Character(models.Model):
             promoted_lvls = level - 1
             total_levels = unpromoted_lvls + promoted_lvls
             for stat_name in FE_STAT_NAMES:
+                if stats[stat_name] > getattr(pclass, stat_name):
+                    stat_percentiles[stat_name] = 0
+                    continue
                 growth_percentage = getattr(self, "growth_" + stat_name)
                 guaranteed_stat_per_level = int(growth_percentage // 100)
                 growth_probability = (

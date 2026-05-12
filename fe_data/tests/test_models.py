@@ -35,7 +35,7 @@ class CharacterMethodTestCase(TestCase):
             skill=40,
             speed=40,
             luck=40,
-            defense=40,
+            defense=45,
             resistance=50,
         )
         PromotionBonus.objects.create(
@@ -158,7 +158,7 @@ class CharacterMethodTestCase(TestCase):
         """test that the percentile calculation works for the
         case where the character does not promote and the stats
         are not valid"""
-        valid_stats = {
+        invalid_stats = {
             "hp": 10,  # Too high
             "strength": 10,
             "magic": 10,
@@ -173,7 +173,7 @@ class CharacterMethodTestCase(TestCase):
             name="test no promo",
         )
         actual_percentiles = character.calculate_stat_percentiles(
-            stats=valid_stats,
+            stats=invalid_stats,
             level=level,
             promoted=False,
         )
@@ -224,6 +224,44 @@ class CharacterMethodTestCase(TestCase):
             "luck": 0.6303284424,  # Not 0.692452...
             "defense": 0.0025882211123,  # Not 0.0175095...
             "resistance": 0.006878632182,  # Not 0.03979158...
+        }
+        assert actual_percentiles == approx(
+            expected_percentiles
+        ), f"actual percentiles are different from expected\nActual: {actual_percentiles}\nExpect: {expected_percentiles}"
+
+    def test_percentile_calculation_promo_non_valid(self):
+        """test that the percentile calculation works for the
+        case where the character can promote and
+        the stats given are not valid.
+        """
+        invalid_stats = {
+            "hp": -100,
+            "strength": 0,
+            "magic": 5,
+            "skill": 16,
+            "speed": 40,
+            "luck": 34,  # Reachable if not for unpromo cap
+            "defense": 46,  # Reachable if not for promo cap
+            "resistance": 999,
+        }
+        level = 13  # 12 level ups
+        character = Character.objects.get(
+            name="test promo",
+        )
+        actual_percentiles = character.calculate_stat_percentiles(
+            stats=invalid_stats,
+            level=level,
+            promoted=True,
+        )
+        expected_percentiles = {
+            "hp": 1,
+            "strength": 1,
+            "magic": 1,
+            "skill": 1,
+            "speed": 0,
+            "luck": 0,
+            "defense": 0,
+            "resistance": 0,
         }
         assert actual_percentiles == approx(
             expected_percentiles
