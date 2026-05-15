@@ -73,7 +73,7 @@
                             <th>Actual</th>
                             <th>Expected</th>
                             <th>Difference</th>
-                            <th>Result</th>
+                            <th>Percentile</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -89,7 +89,7 @@
                                         {{ data.difference }}
                                     {% endif %}
                                 </td>
-                                <td class="{% if data.label == 'Blessed' %}blessed{% elif data.label == 'Screwed' %}screwed{% else %}average{% endif %}">
+                                <td>
                                     {{ data.label }}
                                 </td>
                             </tr>

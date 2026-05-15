@@ -155,7 +155,7 @@ class Character(models.Model):
                     percentile = 0
                     # start by calculating the non-cap contribution if any
 
-                    # Sum staring from minimum required stat ups where it is still
+                    # Sum starting from minimum required stat ups where it is still
                     # possible to hit the expected stat value when promoted and leveled
                     # to the given level.
                     low_non_cap_level = max(
@@ -185,10 +185,20 @@ class Character(models.Model):
                             - guaranteed_stat_per_level * total_levels
                         )
                         for i in range(low_non_cap_level, high_non_cap_level + 1):
-                            percentile += binomial_probability(
-                                unpromoted_lvls, i, growth_probability
-                            ) * cumulative_binomial_probability_at_least(
-                                promoted_lvls, promo_lower_bound - i, growth_probability
+                            promotion_sum_probability = 1
+                            if promo_lower_bound - i > 0:
+                                promotion_sum_probability = (
+                                    cumulative_binomial_probability_at_least(
+                                        promoted_lvls,
+                                        promo_lower_bound - i,
+                                        growth_probability,
+                                    )
+                                )
+                            percentile += (
+                                binomial_probability(
+                                    unpromoted_lvls, i, growth_probability
+                                )
+                                * promotion_sum_probability
                             )
 
                     # Lastly calculate the cap contribution
@@ -198,9 +208,13 @@ class Character(models.Model):
                         - promo_bonus
                         - guaranteed_stat_per_level * promoted_lvls
                     )
-                    promoted_cap_probability = cumulative_binomial_probability_at_least(
-                        promoted_lvls, promo_lower_bound, growth_probability
-                    )
+                    promoted_cap_probability = 1
+                    if promo_lower_bound > 0:
+                        promoted_cap_probability = (
+                            cumulative_binomial_probability_at_least(
+                                promoted_lvls, promo_lower_bound, growth_probability
+                            )
+                        )
                     if high_non_cap_level >= 0:
                         percentile += (
                             cumulative_binomial_probability_at_least(

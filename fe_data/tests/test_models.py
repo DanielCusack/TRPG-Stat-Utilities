@@ -104,7 +104,7 @@ class CharacterMethodTestCase(TestCase):
             base_magic=10,
             base_skill=17,
             base_speed=17,
-            base_luck=17,
+            base_luck=16,
             base_defense=13,
             base_resistance=12,
             growth_hp=60,
@@ -200,9 +200,9 @@ class CharacterMethodTestCase(TestCase):
             "hp": 25,  # Edgecase as there are 5 levels unpromoted
             "strength": 25,  # No stat ups starting at max in unpromo class
             "magic": 15,  # No stat ups not starting at max in unpromo
-            "skill": 30,  # Probably the most typical case
+            "skill": 30,  # one of the most typical case
             "speed": 34,  # Max possible value considering unpromo cap
-            "luck": 25,  # Same as skill but with a promo bonus of 0
+            "luck": 18,  # another very typical case when expected value is under first cap
             "defense": 42,  # Typical case for >100% growth
             "resistance": 43,  # Max possible value considering unpromo cap >100% growth
         }
@@ -216,12 +216,12 @@ class CharacterMethodTestCase(TestCase):
             promoted=True,
         )
         expected_percentiles = {
-            "hp": 0.9824904585216,
+            "hp": 0.9824904585216,  # Same as simple case with total level
             "strength": 1,
             "magic": 1,
             "skill": 0.6303284424,  # Not 0.692452...
             "speed": 0.006878632182,  # Not 0.03979158...
-            "luck": 0.6303284424,  # Not 0.692452...
+            "luck": 0.9999409442,  # Same as simple case with total level
             "defense": 0.0025882211123,  # Not 0.0175095...
             "resistance": 0.006878632182,  # Not 0.03979158...
         }
