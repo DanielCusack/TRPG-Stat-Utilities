@@ -17,40 +17,84 @@
 
 <div class="container py-5">
 
-    <h1 class="mb-4 text-center">Fire Emblem: Path of Radiance — Stat Checker</h1>
+    <h1 class="mb-4 text-center">Fire Emblem: Path of Radiance</h1>
+
+    <h2 class="mb-4 text-center">Stat Checker</h2>
 
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <form method="post" class="row g-3">
                 {% csrf_token %}
 
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-md-2">
                     {{ form.character.label_tag }}
+                </div>
+                <div class="col-12 col-md-4">
                     {{ form.character }}
                 </div>
 
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-md-2">
                     {{ form.level.label_tag }}
+                </div>
+                <div class="col-12 col-md-4">
                     {{ form.level }}
                 </div>
 
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-md-2">
                     {{ form.promoted.label_tag }}
+                </div>
+                <div class="col-12 col-md-10">
                     {{ form.promoted }}
                 </div>
 
                 <hr class="mt-4">
 
-                <h5>Enter Current Stats</h5>
-
-                {% for field in form %}
-                    {% if field.name not in "character level promoted" %}
-                        <div class="col-6 col-md-3">
-                            {{ field.label_tag }}
-                            {{ field }}
+                <h5 class="text-center">Current Stats</h5>
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        <div class="row mb-2">
+                            <div class="col-4">{{ form.hp.label_tag }}</div>
+                            <div class="col-8">{{ form.hp }}</div>
                         </div>
-                    {% endif %}
-                {% endfor %}
+
+                        <div class="row mb-2">
+                            <div class="col-4">{{ form.strength.label_tag }}</div>
+                            <div class="col-8">{{ form.strength }}</div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-4">{{ form.magic.label_tag }}</div>
+                            <div class="col-8">{{ form.magic }}</div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-4">{{ form.skill.label_tag }}</div>
+                            <div class="col-8">{{ form.skill }}</div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <div class="row mb-2">
+                            <div class="col-4">{{ form.speed.label_tag }}</div>
+                            <div class="col-8">{{ form.speed }}</div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-4">{{ form.luck.label_tag }}</div>
+                            <div class="col-8">{{ form.luck }}</div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-4">{{ form.defense.label_tag }}</div>
+                            <div class="col-8">{{ form.defense }}</div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-4">{{ form.resistance.label_tag }}</div>
+                            <div class="col-8">{{ form.resistance }}</div>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="col-12 mt-3">
                     <button type="submit" class="btn btn-primary w-100">
@@ -90,7 +134,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {{ data.label }}
+                                    {{ data.percentile }}
                                 </td>
                             </tr>
                         {% endfor %}

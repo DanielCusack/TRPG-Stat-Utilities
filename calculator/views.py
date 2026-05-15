@@ -43,7 +43,7 @@ def stat_check_view(request):
                     "actual": act,
                     "expected": round(exp, 2),
                     "difference": round(diff, 2),
-                    "label": round(100 * percentile_stats[stat], 2),
+                    "percentile": round(100 * percentile_stats[stat], 2),
                 }
     else:
         display_form = StatCheckForm()
