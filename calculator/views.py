@@ -1,6 +1,5 @@
 from django.shortcuts import render
 from .forms import StatCheckForm
-from .utils import classify_stat
 
 
 def stat_check_view(request):
@@ -45,6 +44,8 @@ def stat_check_view(request):
                     "difference": round(diff, 2),
                     "percentile": round(100 * percentile_stats[stat], 2),
                 }
+        else:
+            display_form = form
     else:
         display_form = StatCheckForm()
     return render(
