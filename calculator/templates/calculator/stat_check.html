@@ -50,48 +50,56 @@
                 <hr class="mt-4">
 
                 <h5 class="text-center">Current Stats</h5>
-                <div class="row">
-                    <div class="col-12 col-md-6">
-                        <div class="row mb-2">
-                            <div class="col-4">{{ form.hp.label_tag }}</div>
-                            <div class="col-8">{{ form.hp }}</div>
+                <div class="col-12">
+                    <div class="row">
+
+                        <!-- LEFT COLUMN -->
+                        <div class="col-12 col-md-6">
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.hp.label_tag }}</div>
+                                <div class="col-12 col-md-3">{{ form.hp }}</div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.strength.label_tag }}</div>
+                                <div class="col-12 col-md-3">{{ form.strength }}</div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.magic.label_tag }}</div>
+                                <div class="col-12 col-md-3">{{ form.magic }}</div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.skill.label_tag }}</div>
+                                <div class="col-12 col-md-3">{{ form.skill }}</div>
+                            </div>
+
                         </div>
 
-                        <div class="row mb-2">
-                            <div class="col-4">{{ form.strength.label_tag }}</div>
-                            <div class="col-8">{{ form.strength }}</div>
-                        </div>
+                        <!-- RIGHT COLUMN -->
+                        <div class="col-12 col-md-6">
 
-                        <div class="row mb-2">
-                            <div class="col-4">{{ form.magic.label_tag }}</div>
-                            <div class="col-8">{{ form.magic }}</div>
-                        </div>
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.speed.label_tag }}</div>
+                                <div class="col-12 col-md-3">{{ form.speed }}</div>
+                            </div>
 
-                        <div class="row mb-2">
-                            <div class="col-4">{{ form.skill.label_tag }}</div>
-                            <div class="col-8">{{ form.skill }}</div>
-                        </div>
-                    </div>
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.luck.label_tag }}</div>
+                                <div class="col-12 col-md-3">{{ form.luck }}</div>
+                            </div>
 
-                    <div class="col-12 col-md-6">
-                        <div class="row mb-2">
-                            <div class="col-4">{{ form.speed.label_tag }}</div>
-                            <div class="col-8">{{ form.speed }}</div>
-                        </div>
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.defense.label_tag }}</div>
+                                <div class="col-12 col-md-3">{{ form.defense }}</div>
+                            </div>
 
-                        <div class="row mb-2">
-                            <div class="col-4">{{ form.luck.label_tag }}</div>
-                            <div class="col-8">{{ form.luck }}</div>
-                        </div>
-
-                        <div class="row mb-2">
-                            <div class="col-4">{{ form.defense.label_tag }}</div>
-                            <div class="col-8">{{ form.defense }}</div>
-                        </div>
-
-                        <div class="row mb-2">
-                            <div class="col-4">{{ form.resistance.label_tag }}</div>
-                            <div class="col-8">{{ form.resistance }}</div>
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.resistance.label_tag }}</div>
+                                <div class="col-12 col-md-3">{{ form.resistance }}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
