@@ -1,0 +1,211 @@
+from typing import TYPE_CHECKING
+from fe_data.constants import FE_STAT_NAMES
+from fe_data.models import PromotionBonus
+from calculator.utils import (
+    expected_stat,
+    calculate_promoted_stat,
+    cumulative_binomial_probability_at_least,
+    binomial_probability,
+)
+
+if TYPE_CHECKING:
+    from fe_data.models import Character
+
+
+def calculate_expected_stats(character: "Character", level: int, promoted: bool):
+    """Calculate the character's expected stats for a given level and promotion via growths X level."""
+    # Compute stats without class change
+    expected_stats = {}
+    base_max_level = (
+        character.base_class.level_cap
+        if promoted and not character.base_class.promoted
+        else level
+    )
+    for stat in FE_STAT_NAMES:
+        expected_stats[stat] = expected_stat(
+            getattr(character, "base_" + stat),
+            getattr(character, "growth_" + stat),
+            character.base_level,
+            base_max_level,
+            getattr(character.base_class, stat),
+        )
+
+    # If the character starts unpromoted but is promoted now, calculate promotion bonuses and expected promoted stats
+    if promoted and not character.base_class.promoted:
+        promo_bonus = PromotionBonus.objects.filter(
+            from_class=character.base_class
+        ).first()
+        promo_class = promo_bonus.to_class
+        for stat in FE_STAT_NAMES:
+            expected_stats[stat] = calculate_promoted_stat(
+                expected_stats[stat],
+                getattr(promo_bonus, stat),
+                getattr(promo_class, stat),
+            )
+            expected_stats[stat] = expected_stat(
+                expected_stats[stat],
+                getattr(character, "growth_" + stat),
+                1,
+                level,
+                getattr(promo_class, stat),
+            )
+    return expected_stats
+
+
+def calculate_stat_percentiles(
+    character: "Character", stats: dict[str, int], level: int, promoted: bool
+):
+    stat_percentiles = {}
+    if promoted and not character.base_class.promoted:
+        unpromoted_lvls = character.base_class.level_cap - character.base_level
+        p_bonus_info = PromotionBonus.objects.get(from_class=character.base_class)
+        pclass = p_bonus_info.to_class
+        promoted_lvls = level - 1
+        total_levels = unpromoted_lvls + promoted_lvls
+        for stat_name in FE_STAT_NAMES:
+            if stats[stat_name] > getattr(pclass, stat_name):
+                stat_percentiles[stat_name] = 0
+                continue
+            growth_percentage = getattr(character, "growth_" + stat_name)
+            guaranteed_stat_per_level = int(growth_percentage // 100)
+            growth_probability = (growth_percentage / 100) - guaranteed_stat_per_level
+            base_class_cap = getattr(character.base_class, stat_name)
+            base_stat = getattr(character, "base_" + stat_name)
+            promo_bonus = getattr(p_bonus_info, stat_name)
+            if (
+                base_stat + unpromoted_lvls * (guaranteed_stat_per_level + 1)
+                > base_class_cap
+            ):
+                # If the character can cap in their unpromoted class then we
+                # can calculate the percentile by treating the paths where the
+                # character caps separately from those where it doesn't.
+                stat_ups_required = (
+                    stats[stat_name]
+                    - base_stat
+                    - min(
+                        base_class_cap - base_stat,
+                        guaranteed_stat_per_level * unpromoted_lvls,
+                    )
+                    - (guaranteed_stat_per_level * promoted_lvls)
+                    - promo_bonus
+                )
+                if stat_ups_required < 1:
+                    # Technically, if the stat is at or below the minimum possible,
+                    # then 100% of samples will have at least that amount
+                    stat_percentiles[stat_name] = 1
+                    continue
+                percentile = 0
+                # start by calculating the non-cap contribution if any
+
+                # Sum starting from minimum required stat ups where it is still
+                # possible to hit the expected stat value when promoted and leveled
+                # to the given level.
+                low_non_cap_level = max(
+                    (
+                        stats[stat_name]
+                        - base_stat
+                        - promo_bonus
+                        - promoted_lvls * (1 + guaranteed_stat_per_level)
+                        - unpromoted_lvls * guaranteed_stat_per_level
+                    ),
+                    0,
+                )
+
+                # to the maximum number of unpromoted stat ups before hitting
+                # the unpromoted cap
+                high_non_cap_level = (
+                    base_class_cap
+                    - base_stat
+                    - unpromoted_lvls * guaranteed_stat_per_level
+                    - 1
+                )
+                if high_non_cap_level >= low_non_cap_level:
+                    promo_lower_bound = (
+                        stats[stat_name]
+                        - base_stat
+                        - promo_bonus
+                        - guaranteed_stat_per_level * total_levels
+                    )
+                    for i in range(low_non_cap_level, high_non_cap_level + 1):
+                        promotion_sum_probability = 1
+                        if promo_lower_bound - i > 0:
+                            promotion_sum_probability = (
+                                cumulative_binomial_probability_at_least(
+                                    promoted_lvls,
+                                    promo_lower_bound - i,
+                                    growth_probability,
+                                )
+                            )
+                        percentile += (
+                            binomial_probability(unpromoted_lvls, i, growth_probability)
+                            * promotion_sum_probability
+                        )
+
+                # Lastly calculate the cap contribution
+                promo_lower_bound = (
+                    stats[stat_name]
+                    - base_class_cap
+                    - promo_bonus
+                    - guaranteed_stat_per_level * promoted_lvls
+                )
+                promoted_cap_probability = 1
+                if promo_lower_bound > 0:
+                    promoted_cap_probability = cumulative_binomial_probability_at_least(
+                        promoted_lvls, promo_lower_bound, growth_probability
+                    )
+                if high_non_cap_level >= 0:
+                    percentile += (
+                        cumulative_binomial_probability_at_least(
+                            unpromoted_lvls,
+                            high_non_cap_level + 1,
+                            growth_probability,
+                        )
+                        * promoted_cap_probability
+                    )
+                else:
+                    # The the stat is guaranteed to cap, just add the
+                    # promoted_cap_probability
+                    percentile += promoted_cap_probability
+                stat_percentiles[stat_name] = percentile
+            else:
+                # The simple case. We can treat it as a binomial distribution
+                # where the number of trials is equal to the sum of
+                # unpromoted and promoted level ups
+
+                stat_ups_required = (
+                    stats[stat_name]
+                    - base_stat
+                    - (guaranteed_stat_per_level * total_levels)
+                    - promo_bonus
+                )
+                if stat_ups_required < 1:
+                    # Technically, if the stat is at or below the minimum possible,
+                    # then 100% of samples will have at least that amount
+                    stat_percentiles[stat_name] = 1
+                    continue
+                stat_percentiles[stat_name] = cumulative_binomial_probability_at_least(
+                    total_levels, stat_ups_required, growth_probability
+                )
+    else:
+        # The simple case. we can treat it as a binomial distribution
+        level_up_number = level - character.base_level
+        for stat_name in FE_STAT_NAMES:
+            growth_percentage = getattr(character, "growth_" + stat_name)
+            guaranteed_stat_per_level = int(growth_percentage // 100)
+            growth_probability = (growth_percentage / 100) - guaranteed_stat_per_level
+            stat_ups_required = (
+                stats[stat_name]
+                - getattr(character, "base_" + stat_name)
+                - (guaranteed_stat_per_level * level_up_number)
+            )
+            if stat_ups_required < 1:
+                # Technically, if the stat is at or below the minimum possible,
+                # then 100% of samples will have at least that amount
+                stat_percentiles[stat_name] = 1
+                continue
+            growth_percentage = getattr(character, "growth_" + stat_name)
+
+            stat_percentiles[stat_name] = cumulative_binomial_probability_at_least(
+                level_up_number, stat_ups_required, growth_probability
+            )
+    return stat_percentiles

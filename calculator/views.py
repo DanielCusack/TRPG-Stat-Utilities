@@ -1,4 +1,8 @@
 from django.shortcuts import render
+from fe_data.domain.statistics import (
+    calculate_expected_stats,
+    calculate_stat_percentiles,
+)
 from .forms import StatCheckForm
 
 
@@ -24,11 +28,11 @@ def stat_check_view(request):
                 "resistance": form.cleaned_data["resistance"],
             }
 
-            expected_stats = character.calculate_expected_stats(
-                level, form.cleaned_data["promoted"]
+            expected_stats = calculate_expected_stats(
+                character, level, form.cleaned_data["promoted"]
             )
-            percentile_stats = character.calculate_stat_percentiles(
-                actual_stats, level, form.cleaned_data["promoted"]
+            percentile_stats = calculate_stat_percentiles(
+                character, actual_stats, level, form.cleaned_data["promoted"]
             )
 
             # assemble results

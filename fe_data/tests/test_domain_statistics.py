@@ -1,9 +1,10 @@
 from django.test import TestCase
 from pytest import approx
 from fe_data.models import Character, FEClass, PromotionBonus
+from fe_data.domain.statistics import calculate_stat_percentiles
 
 
-class CharacterMethodTestCase(TestCase):
+class CalculateStatPercentilesTestCase(TestCase):
     def setUp(self):
         unpromotable_class = FEClass.objects.create(
             name="unpromotable class",
@@ -135,7 +136,8 @@ class CharacterMethodTestCase(TestCase):
         character = Character.objects.get(
             name="test no promo",
         )
-        actual_percentiles = character.calculate_stat_percentiles(
+        actual_percentiles = calculate_stat_percentiles(
+            character=character,
             stats=valid_stats,
             level=level,
             promoted=False,
@@ -172,7 +174,8 @@ class CharacterMethodTestCase(TestCase):
         character = Character.objects.get(
             name="test no promo",
         )
-        actual_percentiles = character.calculate_stat_percentiles(
+        actual_percentiles = calculate_stat_percentiles(
+            character=character,
             stats=invalid_stats,
             level=level,
             promoted=False,
@@ -210,7 +213,8 @@ class CharacterMethodTestCase(TestCase):
         character = Character.objects.get(
             name="test promo",
         )
-        actual_percentiles = character.calculate_stat_percentiles(
+        actual_percentiles = calculate_stat_percentiles(
+            character=character,
             stats=valid_stats,
             level=level,
             promoted=True,
@@ -248,7 +252,8 @@ class CharacterMethodTestCase(TestCase):
         character = Character.objects.get(
             name="test promo",
         )
-        actual_percentiles = character.calculate_stat_percentiles(
+        actual_percentiles = calculate_stat_percentiles(
+            character=character,
             stats=invalid_stats,
             level=level,
             promoted=True,
