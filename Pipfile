@@ -8,6 +8,7 @@ django = "*"
 uvicorn = "*"
 fastapi = "*"
 django-extensions = "*"
+pydantic = "*"
 
 [dev-packages]
 pytest = "*"
