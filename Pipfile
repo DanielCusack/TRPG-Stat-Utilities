@@ -9,6 +9,7 @@ uvicorn = "*"
 fastapi = "*"
 django-extensions = "*"
 pydantic = "*"
+whitenoise = "*"
 
 [dev-packages]
 pytest = "*"
