@@ -1,0 +1,196 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FE9 Stat Checker</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="icon" href="{% static 'calculator/favicon.ico' %}">
+    <style>
+        .blessed { color: #0a7d00 !important; font-weight: bold; }
+        .screwed { color: #b30000 !important; font-weight: bold; }
+        .average { color: #555 !important; }
+    </style>
+</head>
+
+<body class="bg-light">
+
+<div class="container py-5">
+
+    <h1 class="mb-4 text-center">Fire Emblem: Path of Radiance</h1>
+
+    <h2 class="mb-4 text-center">Stat Checker</h2>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="post" class="row g-3">
+                {% csrf_token %}
+
+                <div class="col-12 col-md-2">
+                    {{ form.character.label_tag }}
+                </div>
+                <div class="col-12 col-md-4">
+                    {{ form.character }}
+                </div>
+
+                <div class="col-12 col-md-2">
+                    {{ form.level.label_tag }}
+                </div>
+                <div class="col-12 col-md-4">
+                    {{ form.level }}
+                </div>
+
+                <div class="col-12 col-md-2">
+                    {{ form.promoted.label_tag }}
+                </div>
+                <div class="col-12 col-md-10">
+                    {{ form.promoted }}
+                </div>
+
+                <hr class="mt-4">
+
+                <h5 class="text-center">Current Stats</h5>
+                <div class="col-12">
+                    <div class="row">
+
+                        <!-- LEFT COLUMN -->
+                        <div class="col-12 col-md-6">
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.hp.label_tag }}</div>
+                                <div class="col-12 col-md-3">{{ form.hp }}</div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.strength.label_tag }}</div>
+                                <div class="col-12 col-md-3">{{ form.strength }}</div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.magic.label_tag }}</div>
+                                <div class="col-12 col-md-3">{{ form.magic }}</div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.skill.label_tag }}</div>
+                                <div class="col-12 col-md-3">{{ form.skill }}</div>
+                            </div>
+
+                        </div>
+
+                        <!-- RIGHT COLUMN -->
+                        <div class="col-12 col-md-6">
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.speed.label_tag }}</div>
+                                <div class="col-12 col-md-3">{{ form.speed }}</div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.luck.label_tag }}</div>
+                                <div class="col-12 col-md-3">{{ form.luck }}</div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.defense.label_tag }}</div>
+                                <div class="col-12 col-md-3">{{ form.defense }}</div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.resistance.label_tag }}</div>
+                                <div class="col-12 col-md-3">{{ form.resistance }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 mt-3">
+                    <button type="submit" class="btn btn-primary w-100">
+                        Check Stats
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if results %}
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="mb-3">Results</h3>
+
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Stat</th>
+                            <th>Actual</th>
+                            <th>Expected</th>
+                            <th>Difference</th>
+                            <th>Percentile</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat, data in results.items %}
+                            <tr>
+                                <td class="text-capitalize">{{ stat }}</td>
+                                <td>{{ data.actual }}</td>
+                                <td>{{ data.expected }}</td>
+                                <td>
+                                    {% if data.difference > 0 %}
+                                        +{{ data.difference }}
+                                    {% else %}
+                                        {{ data.difference }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ data.percentile }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+
+<!-- Toast container (Bootstrap 5) -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+    <div id="formErrorToast" class="toast align-items-center text-bg-danger border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="formErrorToastBody">
+                <!-- Error text will be injected here -->
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                    data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+{% if form.errors %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const toastEl = document.getElementById("formErrorToast");
+        const toastBody = document.getElementById("formErrorToastBody");
+
+        // Collect all error messages into a single string
+        let messages = [];
+
+        {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+                messages.push("{{ error|escapejs }}");
+            {% endfor %}
+        {% endfor %}
+
+        toastBody.textContent = messages.join(" ");
+
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    });
+</script>
+{% endif %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
