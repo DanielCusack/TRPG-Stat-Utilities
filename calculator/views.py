@@ -1,8 +1,10 @@
 from django.shortcuts import render
+from fe_data.constants import FE_STAT_NAMES
 from fe_data.domain.statistics import (
     calculate_expected_stats,
     calculate_stat_percentiles,
 )
+from fe_data.models import Character
 from .forms import StatCheckForm
 
 
@@ -52,11 +54,21 @@ def stat_check_view(request):
             display_form = form
     else:
         display_form = StatCheckForm()
+
+    character_data = {
+        c.pk: {
+            "base": {stat: getattr(c, "base_" + stat) for stat in FE_STAT_NAMES},
+            "growth": {stat: getattr(c, "growth_" + stat) for stat in FE_STAT_NAMES},
+        }
+        for c in Character.objects.all()
+    }
+
     return render(
         request,
         "calculator/stat_check.html",
         {
             "form": display_form,
             "results": results,
+            "character_data": character_data,
         },
     )

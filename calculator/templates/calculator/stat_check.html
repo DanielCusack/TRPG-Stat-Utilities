@@ -22,6 +22,8 @@
 
     <h2 class="mb-4 text-center">Stat Checker</h2>
 
+    {{ character_data|json_script:"character-data" }}
+
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <form method="post" class="row g-3">
@@ -46,6 +48,87 @@
                 </div>
                 <div class="col-12 col-md-10">
                     {{ form.promoted }}
+                </div>
+
+                <hr class="mt-4">
+
+                <h5 class="text-center">Base Stats &amp; Growths</h5>
+                <div class="col-12">
+                    <div class="row">
+
+                        <!-- LEFT COLUMN -->
+                        <div class="col-12 col-md-6">
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.hp.label_tag }}</div>
+                                <div class="col-12 col-md-3">
+                                    <span id="base-hp">—</span>
+                                    <span id="growth-hp" class="text-muted ms-1"></span>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.strength.label_tag }}</div>
+                                <div class="col-12 col-md-3">
+                                    <span id="base-strength">—</span>
+                                    <span id="growth-strength" class="text-muted ms-1"></span>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.magic.label_tag }}</div>
+                                <div class="col-12 col-md-3">
+                                    <span id="base-magic">—</span>
+                                    <span id="growth-magic" class="text-muted ms-1"></span>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.skill.label_tag }}</div>
+                                <div class="col-12 col-md-3">
+                                    <span id="base-skill">—</span>
+                                    <span id="growth-skill" class="text-muted ms-1"></span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- RIGHT COLUMN -->
+                        <div class="col-12 col-md-6">
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.speed.label_tag }}</div>
+                                <div class="col-12 col-md-3">
+                                    <span id="base-speed">—</span>
+                                    <span id="growth-speed" class="text-muted ms-1"></span>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.luck.label_tag }}</div>
+                                <div class="col-12 col-md-3">
+                                    <span id="base-luck">—</span>
+                                    <span id="growth-luck" class="text-muted ms-1"></span>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.defense.label_tag }}</div>
+                                <div class="col-12 col-md-3">
+                                    <span id="base-defense">—</span>
+                                    <span id="growth-defense" class="text-muted ms-1"></span>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">{{ form.resistance.label_tag }}</div>
+                                <div class="col-12 col-md-3">
+                                    <span id="base-resistance">—</span>
+                                    <span id="growth-resistance" class="text-muted ms-1"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <hr class="mt-4">
@@ -168,6 +251,29 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const characterData = JSON.parse(document.getElementById("character-data").textContent);
+        const select = document.getElementById("id_character");
+        const stats = ["hp", "strength", "magic", "skill", "speed", "luck", "defense", "resistance"];
+
+        function formatGrowth(g) {
+            return "(" + (g % 1 === 0 ? g : g.toFixed(1)) + "%)";
+        }
+
+        function updateBaseStats() {
+            const data = characterData[select.value];
+            stats.forEach(function (stat) {
+                document.getElementById("base-" + stat).textContent = data ? data.base[stat] : "—";
+                document.getElementById("growth-" + stat).textContent = data ? formatGrowth(data.growth[stat]) : "";
+            });
+        }
+
+        select.addEventListener("change", updateBaseStats);
+        updateBaseStats();
+    });
+</script>
 
 {% if form.errors %}
 <script>
