@@ -256,6 +256,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         const characterData = JSON.parse(document.getElementById("character-data").textContent);
         const select = document.getElementById("id_character");
+        const promotedCheckbox = document.getElementById("id_promoted");
         const stats = ["hp", "strength", "magic", "skill", "speed", "luck", "defense", "resistance"];
 
         function formatGrowth(g) {
@@ -268,6 +269,13 @@
                 document.getElementById("base-" + stat).textContent = data ? data.base[stat] : "—";
                 document.getElementById("growth-" + stat).textContent = data ? formatGrowth(data.growth[stat]) : "";
             });
+
+            if (data && data.promoted) {
+                promotedCheckbox.checked = true;
+                promotedCheckbox.disabled = true;
+            } else {
+                promotedCheckbox.disabled = false;
+            }
         }
 
         select.addEventListener("change", updateBaseStats);

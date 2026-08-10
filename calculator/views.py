@@ -59,8 +59,9 @@ def stat_check_view(request):
         c.pk: {
             "base": {stat: getattr(c, "base_" + stat) for stat in FE_STAT_NAMES},
             "growth": {stat: getattr(c, "growth_" + stat) for stat in FE_STAT_NAMES},
+            "promoted": c.base_class.promoted,
         }
-        for c in Character.objects.all()
+        for c in Character.objects.select_related("base_class").all()
     }
 
     return render(
