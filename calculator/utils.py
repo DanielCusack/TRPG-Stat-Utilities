@@ -28,12 +28,3 @@ def cumulative_binomial_probability_at_least(
         binomial_probability(total, i, event_probability)
         for i in range(occurances, total + 1)
     )
-
-
-def classify_stat(actual, expected, threshold=1.0) -> str:
-    diff = actual - expected
-    if diff > threshold:
-        return "Blessed"
-    elif diff < -threshold:
-        return "Screwed"
-    return "Average"
