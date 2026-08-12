@@ -24,5 +24,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+RUN python manage.py collectstatic --noinput
+
 CMD ["uvicorn", "combined_asgi:application", "--host", "0.0.0.0", "--port", "8000"]
 
