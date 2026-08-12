@@ -25,6 +25,10 @@ class StatCheckForm(forms.Form):
         cleaned_data = super().clean()
         character = cleaned_data.get("character")
         level = cleaned_data.get("level")
+        if character is None or level is None:
+            # character/level already failed their own field validation
+            # and carry their own error; nothing to cross-check here.
+            return cleaned_data
         if character.base_class.promoted:
             cleaned_data["promoted"] = True
             if level < character.base_level:
