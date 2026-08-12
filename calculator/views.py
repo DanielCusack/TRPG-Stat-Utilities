@@ -14,8 +14,6 @@ def stat_check_view(request):
     if request.method == "POST":
         form = StatCheckForm(request.POST)
         if form.is_valid():
-            # Form clean can change the promoted value thus the display may need updating
-            display_form = StatCheckForm(initial=form.cleaned_data)
             character = form.cleaned_data["character"]
             level = form.cleaned_data["level"]
 
@@ -50,10 +48,8 @@ def stat_check_view(request):
                     "difference": round(diff, 2),
                     "percentile": round(100 * percentile_stats[stat], 2),
                 }
-        else:
-            display_form = form
     else:
-        display_form = StatCheckForm()
+        form = StatCheckForm()
 
     character_data = {
         c.pk: {
@@ -68,7 +64,7 @@ def stat_check_view(request):
         request,
         "calculator/stat_check.html",
         {
-            "form": display_form,
+            "form": form,
             "results": results,
             "character_data": character_data,
         },
