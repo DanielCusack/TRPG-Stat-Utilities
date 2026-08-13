@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install pipenv
+        run: pip install pipenv
+
+      - name: Install dependencies
+        # --deploy fails if Pipfile.lock is out of date with Pipfile.
+        run: pipenv install --dev --deploy
+
+      - name: Run tests
+        run: pipenv run pytest
+
+      - name: Django deployment checks
+        # Runs Django's own production checklist against the real prod
+        # settings. The values here are throwaway; they only need to satisfy
+        # the settings module's required-variable guards.
+        env:
+          # Must be >=50 chars with enough entropy, or security.W009 trips the
+          # WARNING fail-level below. Throwaway value, never used at runtime.
+          DJANGO_SECRET_KEY: ci-only-dummy-key-not-used-in-production-0123456789abcdef
+          DJANGO_ALLOWED_HOSTS: example.com
+          DJANGO_SECURE_SSL: "1"
+        run: pipenv run python manage.py check --deploy --fail-level WARNING --settings=mysite.settings.prod

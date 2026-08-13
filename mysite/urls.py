@@ -15,10 +15,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
     path("", include("calculator.urls")),
 ]
+
+# Admin writes to the database (sessions, last_login, admin log), so it is not
+# routed in production where the database is opened read-only.
+if settings.ADMIN_ENABLED:
+    urlpatterns.insert(0, path("admin/", admin.site.urls))

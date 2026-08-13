@@ -1,0 +1,34 @@
+# NOTE: db.sqlite3 is deliberately NOT ignored. The game data is read-only at
+# runtime and ships inside the image, so deploys are atomic and the data
+# version is pinned to the code version.
+
+.git
+.gitignore
+.github
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+.venv/
+venv/
+env/
+.env
+
+# Rebuilt during the image build by collectstatic.
+staticfiles/
+
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+.claude/
+.vscode/
+.history
+
+Dockerfile
+.dockerignore
+docker-compose*.yml
+README.md
+openapi.json
