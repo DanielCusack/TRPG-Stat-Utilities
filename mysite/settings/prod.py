@@ -40,6 +40,26 @@ DATABASES = {
 }
 
 
+# Static files
+#
+# Content-hashed filenames plus pre-compressed .gz variants, built by
+# collectstatic during the image build and served by nginx.
+#
+# Deliberately not in base.py: this backend refuses to resolve a {% static %}
+# URL unless collectstatic has produced staticfiles.json, and Django forces
+# DEBUG=False while running tests, which disables the non-hashed fallback. Any
+# test rendering a template with {% static %} would then fail on a clean
+# checkout where collectstatic has never run.
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+
 # Security
 # https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 

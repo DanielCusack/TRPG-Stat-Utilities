@@ -93,13 +93,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+#
+# Django's default (unhashed) staticfiles storage is used here. Hashed,
+# manifest-based storage is production-only - see prod.py for why.
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
