@@ -75,6 +75,17 @@ class PercentileResponse(BaseModel):
 app = FastAPI()
 
 
+@app.get("/health")
+def health():
+    """Readiness probe: confirms the process is up *and* the read-only
+    database is actually reachable, not just that uvicorn is listening."""
+    try:
+        Character.objects.exists()
+    except Exception:
+        raise HTTPException(status_code=503, detail="database unavailable")
+    return {"status": "ok"}
+
+
 @app.get("/names")
 def get_names():
     characters = Character.objects.all()

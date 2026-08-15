@@ -1,9 +1,14 @@
-version: "3.9"
-
+# Development stack: bind-mounted source, auto-reload, dev settings.
+# For the production stack see docker-compose.prod.yml.
 services:
   app:
     build: .
     container_name: django_fastapi_app
+    environment:
+      # The image defaults to production settings; override for local work so
+      # the read-write database, admin and django_extensions are available.
+      DJANGO_SETTINGS_MODULE: mysite.settings.dev
+      SKIP_COLLECTSTATIC: "1"
     command: uvicorn combined_asgi:application --host 0.0.0.0 --port 8000 --reload
     volumes:
       - .:/app
