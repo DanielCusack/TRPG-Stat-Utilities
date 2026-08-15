@@ -1,0 +1,18 @@
+# Normalise all text files to LF, in the repository and in the working tree.
+#
+# eol=lf here overrides core.autocrlf, so the result is the same on every
+# machine regardless of local git configuration. That matters because several
+# files in this repo are executed inside Linux containers: a CRLF
+# docker-entrypoint.sh makes sh fail with "set: Illegal option -".
+* text=auto eol=lf
+
+# Windows batch files are the one exception - they require CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Never apply line-ending conversion to these.
+*.sqlite3 binary
+*.ico binary
+*.png binary
+*.jpg binary
+*.gz binary

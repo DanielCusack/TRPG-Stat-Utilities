@@ -25,6 +25,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# .gitattributes should keep this file LF-only, but a zip download or a client
+# that ignores it can still introduce CRLF, which makes sh reject the script
+# with "set: Illegal option -". Strip them defensively.
+RUN sed -i 's/\r$//' docker-entrypoint.sh
+
 # collectstatic loads production settings, which require a secret key. This one
 # is used only for this build step and never at runtime.
 RUN DJANGO_SECRET_KEY=build-only-not-a-secret \
