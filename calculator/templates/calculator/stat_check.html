@@ -311,7 +311,12 @@
             });
 
             if (data && data.promoted) {
+                // Starts in a promoted class: always promoted.
                 promotedCheckbox.checked = true;
+                promotedCheckbox.disabled = true;
+            } else if (data && !data.can_promote) {
+                // Never gains access to promotion, so force it off.
+                promotedCheckbox.checked = false;
                 promotedCheckbox.disabled = true;
             } else {
                 promotedCheckbox.disabled = false;

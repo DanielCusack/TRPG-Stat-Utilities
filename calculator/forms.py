@@ -37,6 +37,8 @@ class StatCheckForm(forms.Form):
                     f"{character.name} must be at least level {character.base_level}.",
                 )
         else:
+            if not character.can_promote and cleaned_data["promoted"]:
+                self.add_error("promoted", f"{character.name} cannot promote.")
             if level < character.base_level and cleaned_data["promoted"] == False:
                 self.add_error(
                     "level",

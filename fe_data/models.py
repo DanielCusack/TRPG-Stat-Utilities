@@ -48,6 +48,15 @@ class Character(models.Model):
     name = models.CharField(max_length=50)
     base_class = models.ForeignKey(FEClass, on_delete=models.CASCADE)
 
+    # Position in the in-game recruitment order. Variants of a character (e.g.
+    # Sothe's Blossom entries) sit directly after the character they vary.
+    recruitment_order = models.IntegerField(default=0)
+
+    # Some characters never gain access to promotion even though their class
+    # has a promotion path - Sothe is a Thief, but unlike Volke he cannot
+    # promote to Assassin.
+    can_promote = models.BooleanField(default=True)
+
     # Base stats
     base_level = models.IntegerField(default=1)
     base_hp = models.IntegerField()
@@ -68,6 +77,11 @@ class Character(models.Model):
     growth_luck = models.FloatField()
     growth_defense = models.FloatField()
     growth_resistance = models.FloatField()
+
+    class Meta:
+        # Recruitment order is the order players meet these characters, and is
+        # how they should be listed everywhere in the UI and API.
+        ordering = ["recruitment_order"]
 
     def __str__(self):
         return self.name

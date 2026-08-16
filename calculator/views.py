@@ -59,6 +59,7 @@ def stat_check_view(request):
             "base": {stat: getattr(c, "base_" + stat) for stat in FE_STAT_NAMES},
             "growth": {stat: getattr(c, "growth_" + stat) for stat in FE_STAT_NAMES},
             "promoted": c.base_class.promoted,
+            "can_promote": c.can_promote,
             "portrait": static(portrait_path(c.name, available)),
         }
         for c in Character.objects.select_related("base_class").all()

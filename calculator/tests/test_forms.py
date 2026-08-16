@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 from calculator.forms import StatCheckForm
+from fe_data.constants import FE_STAT_NAMES
 from fe_data.models import Character, FEClass
 
 
@@ -73,6 +74,17 @@ class StatCheckFormTestCase(TestCase):
             growth_luck=50,
             growth_defense=50,
             growth_resistance=50,
+        )
+        # Same unpromoted class as above, but this character never gains access
+        # to promotion (Sothe's situation: a Thief who cannot become an
+        # Assassin, unlike Volke).
+        self.non_promotable_character = Character.objects.create(
+            name="Cannot Promote",
+            base_class=self.unpromoted_class,
+            base_level=1,
+            can_promote=False,
+            **{f"base_{stat}": 5 for stat in FE_STAT_NAMES},
+            **{f"growth_{stat}": 50 for stat in FE_STAT_NAMES},
         )
         self.stat_fields = {
             "hp": 10,
@@ -165,6 +177,32 @@ class StatCheckFormTestCase(TestCase):
         }
         form = StatCheckForm(data)
         self.assertTrue(form.is_valid(), form.errors)
+
+    def test_non_promotable_character_rejects_promotion(self):
+        """The UI disables the checkbox, but that is not a guarantee - a
+        crafted request must still be rejected server side."""
+        data = {
+            "character": self.non_promotable_character.pk,
+            "level": 5,
+            "promoted": "on",
+            **self.stat_fields,
+        }
+        form = StatCheckForm(data)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors["promoted"],
+            [f"{self.non_promotable_character.name} cannot promote."],
+        )
+
+    def test_non_promotable_character_is_valid_when_unpromoted(self):
+        data = {
+            "character": self.non_promotable_character.pk,
+            "level": 5,
+            **self.stat_fields,
+        }
+        form = StatCheckForm(data)
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertFalse(form.cleaned_data["promoted"])
 
     def test_missing_character_is_invalid_without_crashing(self):
         """clean() skips the cross-field checks when no character was
