@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.templatetags.static import static
 from fe_data.constants import FE_STAT_NAMES
 from fe_data.domain.statistics import (
     calculate_expected_stats,
@@ -6,6 +7,7 @@ from fe_data.domain.statistics import (
 )
 from fe_data.models import Character
 from .forms import StatCheckForm
+from .portraits import available_portraits, default_portrait_path, portrait_path
 
 
 def stat_check_view(request):
@@ -51,11 +53,13 @@ def stat_check_view(request):
     else:
         form = StatCheckForm()
 
+    available = available_portraits()
     character_data = {
         c.pk: {
             "base": {stat: getattr(c, "base_" + stat) for stat in FE_STAT_NAMES},
             "growth": {stat: getattr(c, "growth_" + stat) for stat in FE_STAT_NAMES},
             "promoted": c.base_class.promoted,
+            "portrait": static(portrait_path(c.name, available)),
         }
         for c in Character.objects.select_related("base_class").all()
     }
@@ -67,5 +71,6 @@ def stat_check_view(request):
             "form": form,
             "results": results,
             "character_data": character_data,
+            "default_portrait": static(default_portrait_path()),
         },
     )

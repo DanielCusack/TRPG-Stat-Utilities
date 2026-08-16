@@ -11,6 +11,32 @@
         .blessed { color: #0a7d00 !important; font-weight: bold; }
         .screwed { color: #b30000 !important; font-weight: bold; }
         .average { color: #555 !important; }
+
+        /* Portrait is centred on the frame at its natural relative size.
+           If frame.png or the portraits are resized, update these two values
+           and everything else follows. */
+        .portrait-frame {
+            --frame-w: 282;
+            --portrait-w: 256;
+            position: relative;
+            width: calc(var(--frame-w) * 1px);
+            max-width: 100%;
+            margin-inline: auto;
+        }
+        .portrait-frame .frame {
+            display: block;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+        .portrait-frame .portrait {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: calc(var(--portrait-w) / var(--frame-w) * 100%);
+            z-index: 1;
+        }
     </style>
 </head>
 
@@ -29,25 +55,37 @@
             <form method="post" class="row g-3">
                 {% csrf_token %}
 
-                <div class="col-12 col-md-2">
-                    {{ form.character.label_tag }}
-                </div>
-                <div class="col-12 col-md-4">
-                    {{ form.character }}
-                </div>
-
-                <div class="col-12 col-md-2">
-                    {{ form.level.label_tag }}
-                </div>
-                <div class="col-12 col-md-4">
-                    {{ form.level }}
+                <div class="col-12 col-md-5">
+                    <div class="portrait-frame">
+                        <img class="portrait" id="portrait-img"
+                             src="{{ default_portrait }}" alt="">
+                        <img class="frame" src="{% static 'calculator/frame.png' %}" alt="">
+                    </div>
                 </div>
 
-                <div class="col-12 col-md-2">
-                    {{ form.promoted.label_tag }}
-                </div>
-                <div class="col-12 col-md-10">
-                    {{ form.promoted }}
+                <div class="col-12 col-md-7">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-12 col-md-4">
+                            {{ form.character.label_tag }}
+                        </div>
+                        <div class="col-12 col-md-8">
+                            {{ form.character }}
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            {{ form.level.label_tag }}
+                        </div>
+                        <div class="col-12 col-md-8">
+                            {{ form.level }}
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            {{ form.promoted.label_tag }}
+                        </div>
+                        <div class="col-12 col-md-8">
+                            {{ form.promoted }}
+                        </div>
+                    </div>
                 </div>
 
                 <hr class="mt-4">
@@ -257,6 +295,8 @@
         const characterData = JSON.parse(document.getElementById("character-data").textContent);
         const select = document.getElementById("id_character");
         const promotedCheckbox = document.getElementById("id_promoted");
+        const portraitImg = document.getElementById("portrait-img");
+        const defaultPortrait = portraitImg.getAttribute("src");
         const stats = ["hp", "strength", "magic", "skill", "speed", "luck", "defense", "resistance"];
 
         function formatGrowth(g) {
@@ -276,6 +316,12 @@
             } else {
                 promotedCheckbox.disabled = false;
             }
+
+            // URLs come from the server so they survive content hashing in production.
+            portraitImg.src = data ? data.portrait : defaultPortrait;
+            portraitImg.alt = data
+                ? select.options[select.selectedIndex].text + " portrait"
+                : "";
         }
 
         select.addEventListener("change", updateBaseStats);
