@@ -56,6 +56,7 @@ def stat_check_view(request):
     available = available_portraits()
     character_data = {
         c.pk: {
+            "base_level": c.base_level,
             "base": {stat: getattr(c, "base_" + stat) for stat in FE_STAT_NAMES},
             "growth": {stat: getattr(c, "growth_" + stat) for stat in FE_STAT_NAMES},
             "promoted": c.base_class.promoted,

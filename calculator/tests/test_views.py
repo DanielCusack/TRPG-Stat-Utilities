@@ -84,6 +84,13 @@ class StatCheckViewTestCase(TestCase):
         self.assertEqual(unpromoted["base"], {stat: 5 for stat in FE_STAT_NAMES})
         self.assertEqual(unpromoted["growth"], {stat: 50 for stat in FE_STAT_NAMES})
         self.assertFalse(unpromoted["promoted"])
+        self.assertEqual(
+            unpromoted["base_level"], self.unpromoted_character.base_level
+        )
+        self.assertEqual(
+            character_data[self.promoted_character.pk]["base_level"],
+            self.promoted_character.base_level,
+        )
 
         self.assertTrue(character_data[self.promoted_character.pk]["promoted"])
 

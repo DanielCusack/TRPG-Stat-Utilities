@@ -91,6 +91,12 @@
                 <hr class="mt-4">
 
                 <h5 class="text-center">Base Stats &amp; Growths</h5>
+
+                <div class="col-12 text-center mb-2">
+                    <span class="fw-semibold">Base Level:</span>
+                    <span id="base-level">—</span>
+                </div>
+
                 <div class="col-12">
                     <div class="row">
 
@@ -297,6 +303,7 @@
         const promotedCheckbox = document.getElementById("id_promoted");
         const portraitImg = document.getElementById("portrait-img");
         const defaultPortrait = portraitImg.getAttribute("src");
+        const baseLevel = document.getElementById("base-level");
         const stats = ["hp", "strength", "magic", "skill", "speed", "luck", "defense", "resistance"];
 
         function formatGrowth(g) {
@@ -305,6 +312,7 @@
 
         function updateBaseStats() {
             const data = characterData[select.value];
+            baseLevel.textContent = data ? data.base_level : "—";
             stats.forEach(function (stat) {
                 document.getElementById("base-" + stat).textContent = data ? data.base[stat] : "—";
                 document.getElementById("growth-" + stat).textContent = data ? formatGrowth(data.growth[stat]) : "";
